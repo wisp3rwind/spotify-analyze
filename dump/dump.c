@@ -1,5 +1,8 @@
+#ifdef __linux__
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
-#include <mach-o/dyld.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -11,8 +14,12 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <dlfcn.h>
-#include <mach-o/getsect.h>
 #include <assert.h>
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#include <mach-o/getsect.h>
+#endif
 
 #include "pcap.h"
 #include "shn.h"
@@ -102,11 +109,30 @@ static void patch_shn(void) {
 
     printf("Patching ...\n");
 
+    size_t text_size = 0;
+    void *text_start = NULL;
+
+#ifdef __APPLE__
     uintptr_t aslr_offset = _dyld_get_image_vmaddr_slide(0);
     printf("ASLR slide: 0x%lx\n", aslr_offset);
 
-    size_t text_size;
-    void *text_start = getsectdata("__TEXT", "__text", &text_size) + aslr_offset;
+    text_start = getsectdata("__TEXT", "__text", &text_size) + aslr_offset;
+#endif
+
+#ifdef __linux__
+    unsigned long long start, end = 0;
+    FILE *mapfile = fopen("/proc/self/maps", "r");
+    assert(mapfile != NULL);
+    char line[256];
+    // TODO: Search through the file for the text segment rather than assuming it's the first line.
+    if (fgets(line, sizeof(line), mapfile)) {
+        sscanf(line,"%llx-%llx", &start, &end);
+    }
+    fclose(mapfile);
+    text_size = end - start;
+    text_start = (void*)(uintptr_t)start;
+#endif
+
     printf("text: %p size=0x%zx\n", text_start, text_size);
 
     void *original_shn_encrypt, *original_shn_decrypt;
@@ -124,6 +150,8 @@ static void patch_shn(void) {
  * Ensure we only inject our code once.
  */
 pthread_once_t patch_once = PTHREAD_ONCE_INIT;
+
+#ifdef __APPLE__
 static int my_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
     pthread_once(&patch_once, patch_shn);
     return connect(sockfd, addr, addrlen);
@@ -134,6 +162,17 @@ static int my_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen
             __attribute__ ((section ("__DATA,__interpose"))) = { (const void*)(unsigned long)&_replacement, (const void*)(unsigned long)&_replacee }
 
 DYLD_INTERPOSE(my_connect, connect);
+#endif
+
+#ifdef __linux__
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+    static int (*real_connect)(int, const struct sockaddr *, socklen_t) = NULL;
+    if (!real_connect)
+        real_connect = dlsym(RTLD_NEXT, "connect");
+    pthread_once(&patch_once, patch_shn);
+    return real_connect(sockfd, addr, addrlen);
+}
+#endif
 
 // From subhook: https://github.com/Zeex/subhook
 #define PUSH_OPCODE 0x68
