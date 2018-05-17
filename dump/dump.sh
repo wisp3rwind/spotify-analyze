@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 set -eux
-DYLD_INSERT_LIBRARIES=dump.dylib "$@"
+FILEPATH="$PWD/dump.dylib"
+DYLD_INSERT_LIBRARIES=$FILEPATH LD_PRELOAD=$FILEPATH "$@"
