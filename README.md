@@ -26,3 +26,11 @@ To use, run the `dissect.sh` script with the packet dump as an argument.
 ```
 
 This will start wireshark with the right plugins loaded, and open the packet dump.
+
+## macOS Specific
+
+### Warning: This will make your system insecure. Remove this kernel patch once done with dumping.
+
+Thanks to Apple's tireless efforts to protect us, you can't simply run `./dump.sh /Applications/Spotify.app/Contents/MacOS/Spotify` anymore above 10.12, as the dump.dylib library is unsigned. Self signed certificates manually trusted don't work either, as they don't have Team IDs in them. So the dirty solution is to patch the kernel to disable library validation.
+
+https://github.com/mologie/macos-disable-library-validation gets the job done, just build, install, reboot, dump, uninstall, reboot, dissect. It's really that simple. Think different.
