@@ -123,12 +123,17 @@ static void patch_shn(void) {
     unsigned long long start, end = 0;
     FILE *mapfile = fopen("/proc/self/maps", "r");
     assert(mapfile != NULL);
-    char line[256];
-    // TODO: Search through the file for the text segment rather than assuming it's the first line.
-    if (fgets(line, sizeof(line), mapfile)) {
-        sscanf(line,"%llx-%llx", &start, &end);
+    char line[256], flags[4];
+    unsigned found = 0;
+    while (fgets(line, sizeof(line), mapfile)) {
+        sscanf(line,"%llx-%llx %4s", &start, &end, flags);
+        if (strstr(flags, "r-xp")) {
+            found = 1;
+            break;
+        }
     }
     fclose(mapfile);
+    assert(found == 1);
     text_size = end - start;
     text_start = (void*)(uintptr_t)start;
 #endif
