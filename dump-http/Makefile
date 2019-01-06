@@ -12,10 +12,10 @@ endif
 DYLIB=curl_patch.dylib
 INPUT=curl_patch.c
 
-curl_patch:
+curl_patch: curl_patch.c
 	$(CC) $(CFLAGS) -o $(DYLIB) $(INPUT)
 
 .PHONY: clean
 
 clean:
-	rm -f $(DYLIB) $(INPUT)
+	rm -f $(DYLIB)
