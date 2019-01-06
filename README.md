@@ -19,6 +19,15 @@ This will produce a `dump.pcap` in the current directory, which can be analyzed 
 ## spotify-dissect
 The `spotify-dissect` tool is a set of Wireshark dissectors used to analyze packet dumps.
 
+## spotify-curl-patch
+The `spotify-curl-patch` tool sets `CURLOPT_VERBOSE` to `1` logging to the console every request made with `libcurl`.
+
+This have been tested on Linux only.
+
+```
+~/spotify-analyze/curl-patch> ./patch.sh /usr/bin/spotify
+```
+
 ##### MacOS/Linux
 To use, run the `dissect.sh` script with the packet dump as an argument.
 
