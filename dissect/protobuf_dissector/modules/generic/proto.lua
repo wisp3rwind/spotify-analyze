@@ -32,7 +32,7 @@ local GenericExperts     = require "generic.experts"
 local GenericProto = {}
 
 
-GenericProto.proto = Proto.new("Protobuf", "Google Protobuf Format")
+GenericProto.proto = Proto.new("Protobuf_", "Google Protobuf Format")
 
 local pfields = GenericProtoFields:getFields()
 
