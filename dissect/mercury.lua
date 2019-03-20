@@ -46,15 +46,24 @@ function mercury.dissector(buffer, pinfo, tree)
 
     DissectorTable.get("protobuf"):try("Header", header_data, pinfo, subtree)
 
-    pinfo.cols.info = (header_method() or header_status_code()).value .. " " .. header_uri().value
+    local uri = header_uri()
+    if uri ~= nil then
+        pinfo.cols.info = (header_method() or header_status_code()).value .. " " .. uri.value
+    else
+        pinfo.cols.info = (header_method() or header_status_code()).value
+    end
 
     local part_count = part_count:uint()
 
     local content_type = header_content_type()
-    if part_count > 1 and content_type ~= nil then
-        local payload_data
-        payload_data, offset = parse_payload(buffer, offset)
-        mercury_dt:try(content_type.value, payload_data, pinfo, subtree)
+    if part_count > 1 then
+        local payload_data, offset2
+        payload_data, offset2 = parse_payload(buffer, offset)
+        if content_type ~= nil then
+            mercury_dt:try(content_type.value, payload_data, pinfo, subtree)
+        elseif string.match(uri.value, "hm://remote/") then
+            DissectorTable.get("protobuf"):try("SpircFrame", payload_data, pinfo, tree)
+        end
         part_count = part_count - 1
     end
 
