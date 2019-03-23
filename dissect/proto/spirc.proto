@@ -1,4 +1,4 @@
-message Frame {
+message SpircFrame {
     optional uint32 version = 0x1;
     optional string ident = 0x2;
     optional string protocol_version = 0x3;
