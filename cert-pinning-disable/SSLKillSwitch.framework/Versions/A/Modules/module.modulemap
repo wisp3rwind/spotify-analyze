@@ -1,0 +1,6 @@
+framework module SSLKillSwitch {
+  umbrella header "SSLKillSwitch.h"
+
+  export *
+  module * { export * }
+}
