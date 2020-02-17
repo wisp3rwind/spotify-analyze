@@ -34,6 +34,10 @@ function spotify.dissector(buffer, pinfo, tree)
         DissectorTable.get("protobuf"):try("APWelcome", payload, pinfo, tree)
     elseif cmd:uint() == 0xad then
         DissectorTable.get("protobuf"):try("APLoginFailed", payload, pinfo, tree)
+    elseif cmd:uint() == 0x0c then
+        pinfo.cols.info = "Req AudioKey: " .. payload()
+    elseif cmd:uint() == 0x0d then
+        pinfo.cols.info = "Got AudioKey: " .. payload()
     else
         DissectorTable.get("spotify.cmd"):try(cmd:uint(), payload, pinfo, tree)
     end

@@ -54,19 +54,19 @@ static void my_shn_decrypt(shn_ctx * c, UCHAR * buf, int nbytes) {
     } __attribute__((packed)) header = { 0, 0 };
 
     if (header.cmd == 0) {
-        assert(nbytes == 3);
-        memcpy(&header, buf, 3);
+        if (nbytes == 3)
+            memcpy(&header, buf, 3);
     } else {
-        assert(nbytes == ntohs(header.length));
+        if (nbytes == ntohs(header.length)) {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            pcap_write_packet_header(dump_fd, &tv, 4 + nbytes);
 
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        pcap_write_packet_header(dump_fd, &tv, 4 + nbytes);
-
-        uint8_t direction = DIRECTION_RECV;
-        write(dump_fd, &direction, 1);
-        write(dump_fd, &header, 3);
-        write(dump_fd, buf, nbytes);
+            uint8_t direction = DIRECTION_RECV;
+            write(dump_fd, &direction, 1);
+            write(dump_fd, &header, 3);
+            write(dump_fd, buf, nbytes);
+        }
 
         header.cmd = 0;
     }

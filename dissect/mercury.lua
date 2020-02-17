@@ -1,3 +1,64 @@
+function readUntilTab(buffer, offset)
+	local initial_offset = offset
+	local bytes = buffer:bytes()
+	while true do
+		if bytes:get_index(offset) == 0x09 then
+			break
+		end
+
+		offset = offset + 1
+	end
+
+	return offset + 1, buffer:range(initial_offset, offset - initial_offset)
+end
+
+
+---------------------------------------------------------------------------
+-- Track played (372)
+
+es_track_played = Proto("es_track_played", "Track played event")
+es_track_played.fields.playback_id = ProtoField.new("Playback ID", "es_track_played.playback_id", ftypes.STRING)
+es_track_played.fields.track_uri = ProtoField.new("Track URI", "es_track_played.track_uri", ftypes.STRING)
+
+function es_track_played.dissector(buffer, pinfo, tree) 
+	local subtree = tree:add (es_track_played, buffer(), "Track played event")
+
+	offset, playback_id = readUntilTab(buffer, 0)
+	subtree:add(es_track_played.fields.playback_id, playback_id)
+
+	offset, track_uri = readUntilTab(buffer, offset)
+	subtree:add(es_track_played.fields.track_uri, track_uri)
+end
+
+---------------------------------------------------------------------------
+
+local event_service_dt = DissectorTable.new ("event_service.op", "Operation", ftypes.STRING)
+event_service_dt:add("372", es_track_played)
+
+
+event_service = Proto("event_service", "Event service")
+local esf = event_service.fields
+esf.op = ProtoField.new("Operation", "event_service.op", ftypes.STRING)
+esf.post_op = ProtoField.new("Post operation (??)", "event_service.post_op", ftypes.STRING)
+
+function event_service.dissector(buffer, pinfo, tree)
+	local subtree = tree:add (event_service, buffer(), "Event service")
+
+	offset, op = readUntilTab(buffer, 0)
+	subtree:add(esf.op, op)
+
+	offset, post_op = readUntilTab(buffer, offset)
+	subtree:add(esf.post_op, post_op)
+
+	event_service_dt:try(op:string(), buffer:range(offset):tvb(), pinfo, subtree)
+end
+
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+
 mercury = Proto("mercury", "Mercury")
 
 local mercury_dt = DissectorTable.new ("mercury.content_type", "Mercury", ftypes.STRING)
@@ -20,6 +81,10 @@ function parse_payload(buffer, offset)
     offset = offset + size:uint()
 
     return data, offset
+end
+
+function starts_with(str, start)
+   return str:sub(1, #start) == start
 end
 
 function mercury.dissector(buffer, pinfo, tree)
@@ -46,15 +111,26 @@ function mercury.dissector(buffer, pinfo, tree)
 
     DissectorTable.get("protobuf"):try("Header", header_data, pinfo, subtree)
 
-    pinfo.cols.info = (header_method() or header_status_code()).value .. " " .. header_uri().value
+    local uri = header_uri()
+    if uri ~= nil then
+        pinfo.cols.info = (header_method() or header_status_code()).value .. " " .. uri.value
+    else
+        pinfo.cols.info = (header_method() or header_status_code()).value
+    end
 
     local part_count = part_count:uint()
 
     local content_type = header_content_type()
-    if part_count > 1 and content_type ~= nil then
-        local payload_data
-        payload_data, offset = parse_payload(buffer, offset)
-        mercury_dt:try(content_type.value, payload_data, pinfo, subtree)
+    if part_count > 1 then
+        local payload_data, offset2
+        payload_data, offset2 = parse_payload(buffer, offset)
+        if content_type ~= nil then
+            mercury_dt:try(content_type.value, payload_data, pinfo, subtree)
+        elseif string.match(uri.value, "hm://remote/") then
+            DissectorTable.get("protobuf"):try("SpircFrame", payload_data, pinfo, tree)
+        elseif header_method().value == "POST" and starts_with(uri.value, "hm://event-service/v1/") then
+        	event_service.dissector:call(payload_data, pinfo, tree)
+        end
         part_count = part_count - 1
     end
 
