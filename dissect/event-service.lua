@@ -37,9 +37,31 @@ function es_track_played.dissector(buffer, pinfo, tree)
 end
 
 ---------------------------------------------------------------------------
+-- Report playback ID (558)
+
+es_report_playback_id = Proto("es_report_playback_id", "Report playback ID")
+es_report_playback_id.fields.playback_id = ProtoField.new("Playback ID", "es_report_playback_id.playback_id", ftypes.STRING)
+es_report_playback_id.fields.session_id = ProtoField.new("Session ID", "es_report_playback_id.track_uri", ftypes.STRING)
+es_report_playback_id.fields.timestamp = ProtoField.new("Timestamp", "es_report_playback_id.timestamp", ftypes.STRING)
+
+function es_report_playback_id.dissector(buffer, pinfo, tree) 
+	local subtree = tree:add (es_report_playback_id, buffer(), "Report playback ID")
+
+	offset, playback_id = readUntilTab(buffer, 0)
+	subtree:add(es_report_playback_id.fields.playback_id, playback_id)
+
+	offset, session_id = readUntilTab(buffer, offset)
+	subtree:add(es_report_playback_id.fields.session_id, session_id)
+
+	offset, ts = readUntilTab(buffer, offset)
+	subtree:add(es_report_playback_id.fields.timestamp, ts)
+end
+
+---------------------------------------------------------------------------
 
 local event_service_dt = DissectorTable.new ("event_service.op", "Operation", ftypes.STRING)
 event_service_dt:add("372", es_track_played)
+event_service_dt:add("558", es_report_playback_id)
 
 
 event_service = Proto("event_service", "Event service")
