@@ -22,6 +22,10 @@ function parse_payload(buffer, offset)
     return data, offset
 end
 
+function starts_with(str, start)
+   return str:sub(1, #start) == start
+end
+
 function mercury.dissector(buffer, pinfo, tree)
     local subtree = tree:add (mercury, buffer(), "Mercury")
     pinfo.cols.protocol = "Mercury"
@@ -63,6 +67,8 @@ function mercury.dissector(buffer, pinfo, tree)
             mercury_dt:try(content_type.value, payload_data, pinfo, subtree)
         elseif string.match(uri.value, "hm://remote/") then
             DissectorTable.get("protobuf"):try("SpircFrame", payload_data, pinfo, tree)
+        elseif header_method().value == "POST" and starts_with(uri.value, "hm://event-service/v1/") then
+        	Dissector.get("event_service"):call(payload_data, pinfo, tree)
         end
         part_count = part_count - 1
     end

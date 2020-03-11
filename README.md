@@ -16,8 +16,26 @@ To use, quit the Spotify application, and execute the `dump.sh` script with the 
 
 This will produce a `dump.pcap` in the current directory, which can be analyzed by the `spotify-dissect` tool.
 
+## spotify-dump-http
+The `spotify-dump-http` tool sets `CURLOPT_VERBOSE` to `1`, therefore logging to the console every request made with `libcurl`. This allows to analyze all the HTTPS requests that wouldn't be readable with a simple Wireshark capture.
+
+This have been tested on Linux only.
+
+```
+~/spotify-analyze/dump-http> ./patch.sh /usr/bin/spotify
+```
+
 ## spotify-dissect
 The `spotify-dissect` tool is a set of Wireshark dissectors used to analyze packet dumps.
+
+## spotify-curl-patch
+The `spotify-curl-patch` tool sets `CURLOPT_VERBOSE` to `1` logging to the console every request made with `libcurl`.
+
+This have been tested on Linux only.
+
+```
+~/spotify-analyze/curl-patch> ./patch.sh /usr/bin/spotify
+```
 
 ##### MacOS/Linux
 To use, run the `dissect.sh` script with the packet dump as an argument.
