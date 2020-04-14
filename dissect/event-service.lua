@@ -135,8 +135,6 @@ function es_fetched_file_id.dissector(buffer, pinfo, tree)
 	offset, number_3 = readUntilTab(buffer, offset)
 	subtree:add(es_fetched_file_id.fields.number_3, number_3)
 
-	-- 2	2	901377495ce0bd795a4993d02e0b466f3302f3d4	spotify:track:77Dn6Y5SzjCzfXLjy89dYB	1	2	2
-
 	pinfo.cols.info = "event-service: Fetched file ID (" .. track_uri:string() .. " => " .. file_id:string() .. ")"
 end
 
@@ -181,114 +179,151 @@ function es_network_request.dissector(buffer, pinfo, tree)
 end
 
 ---------------------------------------------------------------------------
--- Track start event (12)
+-- Track transition event (12)
 
-es_track_start = Proto("es_track_start", "Track start")
-es_track_start.fields.incremental = ProtoField.new("An incremental value", "es_track_start.incremental", ftypes.STRING)
-es_track_start.fields.device_id = ProtoField.new("Device ID", "es_track_start.device_id", ftypes.STRING)
-es_track_start.fields.playback_id = ProtoField.new("Playback ID", "es_track_start.playback_id", ftypes.STRING)
-es_track_start.fields.parent_playback_id = ProtoField.new("Parent playback ID", "es_track_start.parent_playback_id", ftypes.STRING)
-es_track_start.fields.where_1 = ProtoField.new("Where 1", "es_track_start.where_1", ftypes.STRING)
-es_track_start.fields.how_1 = ProtoField.new("How 1", "es_track_start.how_1", ftypes.STRING)
-es_track_start.fields.where_2 = ProtoField.new("Where 2", "es_track_start.where_2", ftypes.STRING)
-es_track_start.fields.how_2 = ProtoField.new("How 2", "es_track_start.how_2", ftypes.STRING)
-es_track_start.fields.context_1 = ProtoField.new("This says context", "es_track_start.context_1", ftypes.STRING)
-es_track_start.fields.one_hundred_sixty_thousand = ProtoField.new("This says 160000", "es_track_start.one_hundred_sixty_thousand", ftypes.STRING)
-es_track_start.fields.context_uri = ProtoField.new("Context URI", "es_track_start.context_uri", ftypes.STRING)
-es_track_start.fields.encoding = ProtoField.new("Audio encoding", "es_track_start.encoding", ftypes.STRING)
-es_track_start.fields.unknown_1 = ProtoField.new("???", "es_track_start.unknown_1", ftypes.STRING)
-es_track_start.fields.timestamp = ProtoField.new("Timestamp", "es_track_start.timestamp", ftypes.STRING)
-es_track_start.fields.context_2 = ProtoField.new("This says context", "es_track_start.context_2", ftypes.STRING)
-es_track_start.fields.origin = ProtoField.new("Playback origin ??", "es_track_start.origin", ftypes.STRING)
-es_track_start.fields.version = ProtoField.new("Client version", "es_track_start.version", ftypes.STRING)
-es_track_start.fields.com_dot_spotify = ProtoField.new("This says com.spotify", "es_track_start.com_dot_spotify", ftypes.STRING)
+es_track_trans = Proto("es_track_trans", "Track transition")
+es_track_trans.fields.incremental = ProtoField.new("An incremental value", "es_track_trans.incremental", ftypes.STRING)
+es_track_trans.fields.device_id = ProtoField.new("Device ID", "es_track_trans.device_id", ftypes.STRING)
+es_track_trans.fields.playback_id = ProtoField.new("Playback ID", "es_track_trans.playback_id", ftypes.STRING)
+es_track_trans.fields.parent_playback_id = ProtoField.new("Parent playback ID", "es_track_trans.parent_playback_id", ftypes.STRING)
+es_track_trans.fields.where_1 = ProtoField.new("Where 1", "es_track_trans.where_1", ftypes.STRING)
+es_track_trans.fields.how_1 = ProtoField.new("How 1", "es_track_trans.how_1", ftypes.STRING)
+es_track_trans.fields.where_2 = ProtoField.new("Where 2", "es_track_trans.where_2", ftypes.STRING)
+es_track_trans.fields.how_2 = ProtoField.new("How 2", "es_track_trans.how_2", ftypes.STRING)
+es_track_trans.fields.context_1 = ProtoField.new("This says context", "es_track_trans.context_1", ftypes.STRING)
+es_track_trans.fields.one_hundred_sixty_thousand = ProtoField.new("This says 160000", "es_track_trans.one_hundred_sixty_thousand", ftypes.STRING)
+es_track_trans.fields.context_uri = ProtoField.new("Context URI", "es_track_trans.context_uri", ftypes.STRING)
+es_track_trans.fields.encoding = ProtoField.new("Audio encoding", "es_track_trans.encoding", ftypes.STRING)
+es_track_trans.fields.track_id = ProtoField.new("Track ID", "es_track_trans.track_id", ftypes.STRING)
+es_track_trans.fields.parent_track_id = ProtoField.new("Parent track ID", "es_track_trans.parent_track_id", ftypes.STRING)
+es_track_trans.fields.timestamp = ProtoField.new("Timestamp", "es_track_trans.timestamp", ftypes.STRING)
+es_track_trans.fields.context_2 = ProtoField.new("This says context", "es_track_trans.context_2", ftypes.STRING)
+es_track_trans.fields.origin = ProtoField.new("Playback origin ??", "es_track_trans.origin", ftypes.STRING)
+es_track_trans.fields.version = ProtoField.new("Client version", "es_track_trans.version", ftypes.STRING)
+es_track_trans.fields.com_dot_spotify = ProtoField.new("This says com.spotify", "es_track_trans.com_dot_spotify", ftypes.STRING)
+es_track_trans.fields.duration = ProtoField.new("Track duration", "es_track_trans.duration", ftypes.STRING)
+es_track_trans.fields.when_1 = ProtoField.new("When 1", "es_track_trans.when_1", ftypes.STRING)
+es_track_trans.fields.when_2 = ProtoField.new("When 2", "es_track_trans.when_2", ftypes.STRING)
+es_track_trans.fields.when_3 = ProtoField.new("When 3", "es_track_trans.when_3", ftypes.STRING)
+es_track_trans.fields.when_4 = ProtoField.new("When 4", "es_track_trans.when_4", ftypes.STRING)
+es_track_trans.fields.started_at = ProtoField.new("Started at", "es_track_trans.started_at", ftypes.STRING)
+es_track_trans.fields.bit_flag_1 = ProtoField.new("Bit flag 1", "es_track_trans.bit_flag_1", ftypes.STRING)
+es_track_trans.fields.bit_flag_2 = ProtoField.new("Bit flag 2", "es_track_trans.bit_flag_2", ftypes.STRING)
+es_track_trans.fields.bit_flag_3 = ProtoField.new("Bit flag 3", "es_track_trans.bit_flag_3", ftypes.STRING)
+es_track_trans.fields.bit_flag_4 = ProtoField.new("Bit flag 4", "es_track_trans.bit_flag_4", ftypes.STRING)
 
 
-function es_track_start.dissector(buffer, pinfo, tree) 
-	local subtree = tree:add (es_track_start, buffer(), "Track start")
+function es_track_trans.dissector(buffer, pinfo, tree) 
+	local subtree = tree:add (es_track_trans, buffer(), "Track transition")
 
 	offset, incremental = readUntilTab(buffer, 0)
-	subtree:add(es_track_start.fields.incremental, incremental)
+	subtree:add(es_track_trans.fields.incremental, incremental)
 
 	offset, device_id = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.device_id, device_id)
+	subtree:add(es_track_trans.fields.device_id, device_id)
 
 	offset, playback_id = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.playback_id, playback_id)
+	subtree:add(es_track_trans.fields.playback_id, playback_id)
 
 	offset, parent_playback_id = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.parent_playback_id, parent_playback_id)
+	subtree:add(es_track_trans.fields.parent_playback_id, parent_playback_id)
 
 	offset, where_1 = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.where_1, where_1)
+	subtree:add(es_track_trans.fields.where_1, where_1)
 
 	offset, how_1 = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.how_1, how_1)
+	subtree:add(es_track_trans.fields.how_1, how_1)
 
 	offset, where_2 = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.where_2, where_2)
+	subtree:add(es_track_trans.fields.where_2, where_2)
 
 	offset, how_2 = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.how_2, how_2)
+	subtree:add(es_track_trans.fields.how_2, how_2)
+
+	offset, scrap = readUntilTab(buffer, offset)
+	offset, scrap = readUntilTab(buffer, offset)
+
+	offset, when_1 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.when_1, when_1)
+
+	offset, when_2 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.when_2, when_2)
+
+	offset, duration = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.duration, duration)
 
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
+
+	offset, started_at = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.started_at, started_at)
+
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 
 	offset, context_1 = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.context_1, context_1)
+	subtree:add(es_track_trans.fields.context_1, context_1)
 
 	offset, scrap = readUntilTab(buffer, offset)
+
+	offset, bit_flag_1 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.bit_flag_1, bit_flag_1)
+
+	offset, bit_flag_2 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.bit_flag_2, bit_flag_2)
+
+	offset, bit_flag_3 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.bit_flag_3, bit_flag_3)
+
 	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
+
+	offset, bit_flag_4 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.bit_flag_4, bit_flag_4)
+
+	offset, when_3 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.when_3, when_3)
+
+	offset, when_4 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.when_4, when_4)
+
 	offset, scrap = readUntilTab(buffer, offset)
 
     offset, fixed_num = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.one_hundred_sixty_thousand, fixed_num)
+	subtree:add(es_track_trans.fields.one_hundred_sixty_thousand, fixed_num)
 
  	offset, context_uri = readUntilTab(buffer, offset)
- 	subtree:add(es_track_start.fields.context_uri, context_uri)
+ 	subtree:add(es_track_trans.fields.context_uri, context_uri)
 
  	offset, encoding = readUntilTab(buffer, offset)
- 	subtree:add(es_track_start.fields.encoding, encoding)
+ 	subtree:add(es_track_trans.fields.encoding, encoding)
 
- 	offset, unknown_1 = readUntilTab(buffer, offset)
- 	subtree:add(es_track_start.fields.unknown_1, unknown_1)
+ 	offset, track_id = readUntilTab(buffer, offset)
+ 	subtree:add(es_track_trans.fields.track_id, track_id)
 
- 	offset, scrap = readUntilTab(buffer, offset)
+ 	offset, parent_track_id = readUntilTab(buffer, offset)
+ 	subtree:add(es_track_trans.fields.parent_track_id, parent_track_id)
+
  	offset, scrap = readUntilTab(buffer, offset)
 
  	offset, ts = readUntilTab(buffer, offset)
- 	subtree:add(es_track_start.fields.timestamp, ts)
+ 	subtree:add(es_track_trans.fields.timestamp, ts)
 
  	offset, scrap = readUntilTab(buffer, offset)
 
  	offset, context_2 = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.context_2, context_2)
+	subtree:add(es_track_trans.fields.context_2, context_2)
 
 	offset, origin = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.origin, origin)
+	subtree:add(es_track_trans.fields.origin, origin)
 
 	offset, version = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.version, version)
+	subtree:add(es_track_trans.fields.version, version)
 
 	offset, com_dot_spotify = readUntilTab(buffer, offset)
-	subtree:add(es_track_start.fields.com_dot_spotify, com_dot_spotify)
+	subtree:add(es_track_trans.fields.com_dot_spotify, com_dot_spotify)
 
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
@@ -296,11 +331,7 @@ function es_track_start.dissector(buffer, pinfo, tree)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 
-	pinfo.cols.info = "event-service: Track start"
-
-	-- 1	6cfc77983f62f1d2150a0eb7350ad303f8074ea5	01ca66289141825b554d18f22e027960	00000000000000000000000000000000	library-collection	clickrow	library-collection	trackdone	
-	-- 2890596	2890596	158571	158571	158571	133	0	0	0	0	0	150	23	context	-1	0	1	0	80	0	158571	158571	0	160000	spotify:user:11145089019:collection	vorbis	
-	-- 35429ae659e04cfa86daeebe4ba1c65a		0	1586714002644	0	context	spotify:app:collection-songs	1.1.26	com.spotify	none	none	local	na	none
+	pinfo.cols.info = "event-service: Track transition"
 end
 
 ---------------------------------------------------------------------------
@@ -393,15 +424,6 @@ function es_cdn_request.dissector(buffer, pinfo, tree)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 
-	-- 7bd0dee79bf8323ee2909b43efb05d81ecf0b686	01ca66289141825b554d18f22e027960	0	0	0	0	2890596	0	0	2890596	music	-1	-1	-1	-1.000000	-1	-1.000000	35	111	27	45.833333	35	54	194	38	73.333333	54	2489746.770026	2318661.000000	
-	-- https	audio-fa.scdn.co	unknown	0	0	0	0	2890596	interactive	7136	160000	6	0
-
-	-- 7e761f628682b3692f71435c8c75950b22e74cd1 00000000000000000000000000000000 0 0 0 0 2645212 0 0 2645212 music -1 -1 -1 -1.000000 -1 -1.000000 43 43 43 43.000000 43 50 50 50 50.000000 50 3323130.653266 2847301.000000 
-	-- https audio-fa.scdn.co unknown 0 0 0 0 2645212 interactive_prefetch 1451 160000 1 0
-
-	-- 4f172e1fd39985a6e55cb1d6e041479b758b2d10 00000000000000000000000000000000 0 0 0 0 4581968 0 0 4581968 music -1 -1 -1 -1.000000 -1 -1.000000 163 163 163 163.000000 163 209 209 209 209.000000 209 3315461.649783 4217551.000000 
-	-- https audio-sp-fra2-13.spotifycdn.net unknown 0 0 0 0 4581968 interactive_prefetch 1609 160000 1 0
-
 	pinfo.cols.info = "event-service: CDN request (" .. file_id:string() .. " for " .. playback_id:string() .. ")"
 end
 
@@ -491,7 +513,7 @@ end
 
 local event_service_dt = DissectorTable.new ("event_service.op", "Operation", ftypes.STRING)
 event_service_dt:add("10", es_cdn_request)
-event_service_dt:add("12", es_track_start)
+event_service_dt:add("12", es_track_trans)
 event_service_dt:add("237", es_network_request)
 event_service_dt:add("268", es_set_variable)
 event_service_dt:add("274", es_fetched_file_id)
