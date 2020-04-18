@@ -191,14 +191,14 @@ es_track_trans.fields.how_1 = ProtoField.new("How 1", "es_track_trans.how_1", ft
 es_track_trans.fields.where_2 = ProtoField.new("Where 2", "es_track_trans.where_2", ftypes.STRING)
 es_track_trans.fields.how_2 = ProtoField.new("How 2", "es_track_trans.how_2", ftypes.STRING)
 es_track_trans.fields.context_1 = ProtoField.new("This says context", "es_track_trans.context_1", ftypes.STRING)
-es_track_trans.fields.one_hundred_sixty_thousand = ProtoField.new("This says 160000", "es_track_trans.one_hundred_sixty_thousand", ftypes.STRING)
+es_track_trans.fields.bitrate = ProtoField.new("Bitrate", "es_track_trans.bitrate", ftypes.STRING)
 es_track_trans.fields.context_uri = ProtoField.new("Context URI", "es_track_trans.context_uri", ftypes.STRING)
 es_track_trans.fields.encoding = ProtoField.new("Audio encoding", "es_track_trans.encoding", ftypes.STRING)
 es_track_trans.fields.track_id = ProtoField.new("Track ID", "es_track_trans.track_id", ftypes.STRING)
 es_track_trans.fields.parent_track_id = ProtoField.new("Parent track ID", "es_track_trans.parent_track_id", ftypes.STRING)
 es_track_trans.fields.timestamp = ProtoField.new("Timestamp", "es_track_trans.timestamp", ftypes.STRING)
 es_track_trans.fields.context_2 = ProtoField.new("This says context", "es_track_trans.context_2", ftypes.STRING)
-es_track_trans.fields.origin = ProtoField.new("Playback origin ??", "es_track_trans.origin", ftypes.STRING)
+es_track_trans.fields.origin = ProtoField.new("Playback origin", "es_track_trans.origin", ftypes.STRING)
 es_track_trans.fields.version = ProtoField.new("Client version", "es_track_trans.version", ftypes.STRING)
 es_track_trans.fields.com_dot_spotify = ProtoField.new("This says com.spotify", "es_track_trans.com_dot_spotify", ftypes.STRING)
 es_track_trans.fields.duration = ProtoField.new("Track duration", "es_track_trans.duration", ftypes.STRING)
@@ -211,6 +211,8 @@ es_track_trans.fields.bit_flag_1 = ProtoField.new("Bit flag 1", "es_track_trans.
 es_track_trans.fields.bit_flag_2 = ProtoField.new("Bit flag 2", "es_track_trans.bit_flag_2", ftypes.STRING)
 es_track_trans.fields.bit_flag_3 = ProtoField.new("Bit flag 3", "es_track_trans.bit_flag_3", ftypes.STRING)
 es_track_trans.fields.bit_flag_4 = ProtoField.new("Bit flag 4", "es_track_trans.bit_flag_4", ftypes.STRING)
+es_track_trans.fields.size_1 = ProtoField.new("Size 1", "es_track_trans.size_1", ftypes.STRING)
+es_track_trans.fields.size_2 = ProtoField.new("Size 2", "es_track_trans.size_2", ftypes.STRING)
 
 
 function es_track_trans.dissector(buffer, pinfo, tree) 
@@ -240,8 +242,11 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, how_2 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.how_2, how_2)
 
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
+	offset, size_1 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.size_1, size_1)
+
+	offset, size_2 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.size_2, size_2)
 
 	offset, when_1 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.when_1, when_1)
@@ -291,8 +296,8 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 
 	offset, scrap = readUntilTab(buffer, offset)
 
-    offset, fixed_num = readUntilTab(buffer, offset)
-	subtree:add(es_track_trans.fields.one_hundred_sixty_thousand, fixed_num)
+    offset, bitrate = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.bitrate, bitrate)
 
  	offset, context_uri = readUntilTab(buffer, offset)
  	subtree:add(es_track_trans.fields.context_uri, context_uri)
@@ -345,7 +350,7 @@ es_cdn_request.fields.scheme = ProtoField.new("Scheme", "es_cdn_request.scheme",
 es_cdn_request.fields.host = ProtoField.new("Host", "es_cdn_request.host", ftypes.STRING)
 es_cdn_request.fields.unknown = ProtoField.new("This says unknown", "es_cdn_request.unknown", ftypes.STRING)
 es_cdn_request.fields.storage_resolve = ProtoField.new("Storege resolve strategy", "es_cdn_request.storage_resolve", ftypes.STRING)
-es_cdn_request.fields.one_hundred_sixty_thousand = ProtoField.new("This says 160000", "es_cdn_request.one_hundred_sixty_thousand", ftypes.STRING)
+es_cdn_request.fields.bitrate = ProtoField.new("Bitrate", "es_cdn_request.bitrate", ftypes.STRING)
 es_cdn_request.fields.total_length_1 = ProtoField.new("Total length 1", "es_cdn_request.total_length_1", ftypes.STRING)
 es_cdn_request.fields.total_length_2 = ProtoField.new("Total length 2", "es_cdn_request.total_length_2", ftypes.STRING)
 es_cdn_request.fields.total_length_3 = ProtoField.new("Total length 3", "es_cdn_request.total_length_3", ftypes.STRING)
@@ -418,8 +423,8 @@ function es_cdn_request.dissector(buffer, pinfo, tree)
 
 	offset, scrap = readUntilTab(buffer, offset)
 
-	offset, fixed_num = readUntilTab(buffer, offset)
-	subtree:add(es_cdn_request.fields.one_hundred_sixty_thousand, fixed_num)
+	offset, bitrate = readUntilTab(buffer, offset)
+	subtree:add(es_cdn_request.fields.bitrate, bitrate)
 
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
