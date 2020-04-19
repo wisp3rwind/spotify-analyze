@@ -211,8 +211,11 @@ es_track_trans.fields.bit_flag_1 = ProtoField.new("Bit flag 1", "es_track_trans.
 es_track_trans.fields.bit_flag_2 = ProtoField.new("Bit flag 2", "es_track_trans.bit_flag_2", ftypes.STRING)
 es_track_trans.fields.bit_flag_3 = ProtoField.new("Bit flag 3", "es_track_trans.bit_flag_3", ftypes.STRING)
 es_track_trans.fields.bit_flag_4 = ProtoField.new("Bit flag 4", "es_track_trans.bit_flag_4", ftypes.STRING)
-es_track_trans.fields.size_1 = ProtoField.new("Size 1", "es_track_trans.size_1", ftypes.STRING)
-es_track_trans.fields.size_2 = ProtoField.new("Size 2", "es_track_trans.size_2", ftypes.STRING)
+es_track_trans.fields.size = ProtoField.new("Size", "es_track_trans.size", ftypes.STRING)
+es_track_trans.fields.decoded_size = ProtoField.new("Decoded size", "es_track_trans.decoded_size", ftypes.STRING)
+es_track_trans.fields.encrypted_latency = ProtoField.new("Encrypted data 64k-latency", "es_track_trans.encrypted_latency", ftypes.STRING)
+es_track_trans.fields.play_latency = ProtoField.new("Play latency", "es_track_trans.play_latency", ftypes.STRING)
+es_track_trans.transition = ProtoField.new("Transition", "es_track_trans.transition", ftypes.STRING)
 
 
 function es_track_trans.dissector(buffer, pinfo, tree) 
@@ -242,11 +245,11 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, how_2 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.how_2, how_2)
 
-	offset, size_1 = readUntilTab(buffer, offset)
-	subtree:add(es_track_trans.fields.size_1, size_1)
+	offset, decoded_size = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.decoded_size, decoded_size)
 
-	offset, size_2 = readUntilTab(buffer, offset)
-	subtree:add(es_track_trans.fields.size_2, size_2)
+	offset, size = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.size, size)
 
 	offset, when_1 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.when_1, when_1)
@@ -257,7 +260,9 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, duration = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.duration, duration)
 
-	offset, scrap = readUntilTab(buffer, offset)
+	offset, encrypted_latency = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.encrypted_latency, encrypted_latency)
+
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
@@ -266,7 +271,9 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, started_at = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.started_at, started_at)
 
-	offset, scrap = readUntilTab(buffer, offset)
+	offset, play_latency = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.play_latency, play_latency)
+
 	offset, scrap = readUntilTab(buffer, offset)
 
 	offset, context_1 = readUntilTab(buffer, offset)
@@ -330,7 +337,9 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, com_dot_spotify = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.com_dot_spotify, com_dot_spotify)
 
-	offset, scrap = readUntilTab(buffer, offset)
+	offset, transition = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.transition, transition)
+
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
