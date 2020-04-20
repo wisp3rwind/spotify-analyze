@@ -208,14 +208,21 @@ es_track_trans.fields.when_3 = ProtoField.new("When 3", "es_track_trans.when_3",
 es_track_trans.fields.when_4 = ProtoField.new("When 4", "es_track_trans.when_4", ftypes.STRING)
 es_track_trans.fields.started_at = ProtoField.new("Started at", "es_track_trans.started_at", ftypes.STRING)
 es_track_trans.fields.bit_flag_1 = ProtoField.new("Bit flag 1", "es_track_trans.bit_flag_1", ftypes.STRING)
-es_track_trans.fields.bit_flag_2 = ProtoField.new("Bit flag 2", "es_track_trans.bit_flag_2", ftypes.STRING)
-es_track_trans.fields.bit_flag_3 = ProtoField.new("Bit flag 3", "es_track_trans.bit_flag_3", ftypes.STRING)
-es_track_trans.fields.bit_flag_4 = ProtoField.new("Bit flag 4", "es_track_trans.bit_flag_4", ftypes.STRING)
+es_track_trans.fields.bit_flag_2 = ProtoField.new("Bit flag 2 (zero?)", "es_track_trans.bit_flag_2", ftypes.STRING)
+es_track_trans.fields.bit_flag_3 = ProtoField.new("Bit flag 3 (zero?)", "es_track_trans.bit_flag_3", ftypes.STRING)
+es_track_trans.fields.bit_flag_4 = ProtoField.new("Bit flag 4 (zero?)", "es_track_trans.bit_flag_4", ftypes.STRING)
+es_track_trans.fields.bit_flag_5 = ProtoField.new("Bit flag 5 (zero?)", "es_track_trans.bit_flag_5", ftypes.STRING)
+es_track_trans.fields.prefetched_audio_key = ProtoField.new("Prefetched audio key", "es_track_trans.prefetched_audio_key", ftypes.STRING)
+es_track_trans.fields.advanced_start = ProtoField.new("Advanced start", "es_track_trans.advanced_start", ftypes.STRING)
 es_track_trans.fields.size = ProtoField.new("Size", "es_track_trans.size", ftypes.STRING)
 es_track_trans.fields.decoded_size = ProtoField.new("Decoded size", "es_track_trans.decoded_size", ftypes.STRING)
 es_track_trans.fields.encrypted_latency = ProtoField.new("Encrypted data 64k-latency", "es_track_trans.encrypted_latency", ftypes.STRING)
 es_track_trans.fields.play_latency = ProtoField.new("Play latency", "es_track_trans.play_latency", ftypes.STRING)
-es_track_trans.transition = ProtoField.new("Transition", "es_track_trans.transition", ftypes.STRING)
+es_track_trans.fields.transition = ProtoField.new("Transition", "es_track_trans.transition", ftypes.STRING)
+es_track_trans.fields.total_fade = ProtoField.new("Total fade duration", "es_track_trans.total_fade", ftypes.STRING)
+es_track_trans.fields.load_time_1 = ProtoField.new("Loading time 1", "es_track_trans.load_time_1", ftypes.STRING)
+es_track_trans.fields.audio_key_sync_time = ProtoField.new("Audio key (sync) time", "es_track_trans.audio_key_sync_time", ftypes.STRING)
+es_track_trans.fields.load_time_3 = ProtoField.new("Loading time 3", "es_track_trans.load_time_3", ftypes.STRING)
 
 
 function es_track_trans.dissector(buffer, pinfo, tree) 
@@ -263,23 +270,8 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, encrypted_latency = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.encrypted_latency, encrypted_latency)
 
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
-
-	offset, started_at = readUntilTab(buffer, offset)
-	subtree:add(es_track_trans.fields.started_at, started_at)
-
-	offset, play_latency = readUntilTab(buffer, offset)
-	subtree:add(es_track_trans.fields.play_latency, play_latency)
-
-	offset, scrap = readUntilTab(buffer, offset)
-
-	offset, context_1 = readUntilTab(buffer, offset)
-	subtree:add(es_track_trans.fields.context_1, context_1)
-
-	offset, scrap = readUntilTab(buffer, offset)
+	offset, total_fade = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.total_fade, total_fade)
 
 	offset, bit_flag_1 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.bit_flag_1, bit_flag_1)
@@ -287,13 +279,38 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	offset, bit_flag_2 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.bit_flag_2, bit_flag_2)
 
+	offset, advanced_start = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.advanced_start, advanced_start)
+
+	offset, started_at = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.started_at, started_at)
+
+	offset, play_latency = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.play_latency, play_latency)
+
+	offset, load_time_1 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.load_time_1, load_time_1)
+
+	offset, context_1 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.context_1, context_1)
+
+	offset, audio_key_sync_time = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.audio_key_sync_time, audio_key_sync_time)
+
 	offset, bit_flag_3 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.bit_flag_3, bit_flag_3)
 
-	offset, scrap = readUntilTab(buffer, offset)
+	offset, prefetched_audio_key = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.prefetched_audio_key, prefetched_audio_key)
 
 	offset, bit_flag_4 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.bit_flag_4, bit_flag_4)
+
+	offset, load_time_3 = readUntilTab(buffer, offset)	
+	subtree:add(es_track_trans.fields.load_time_3, load_time_3)
+
+	offset, bit_flag_5 = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.bit_flag_5, bit_flag_5)
 
 	offset, when_3 = readUntilTab(buffer, offset)
 	subtree:add(es_track_trans.fields.when_3, when_3)
