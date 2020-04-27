@@ -223,6 +223,7 @@ es_track_trans.fields.total_fade = ProtoField.new("Total fade duration", "es_tra
 es_track_trans.fields.load_time_1 = ProtoField.new("Loading time 1", "es_track_trans.load_time_1", ftypes.STRING)
 es_track_trans.fields.audio_key_sync_time = ProtoField.new("Audio key (sync) time", "es_track_trans.audio_key_sync_time", ftypes.STRING)
 es_track_trans.fields.load_time_3 = ProtoField.new("Loading time 3", "es_track_trans.load_time_3", ftypes.STRING)
+es_track_trans.fields.device_id = ProtoField.new("Device ID", "es_track_trans.device_id", ftypes.STRING)
 
 
 function es_track_trans.dissector(buffer, pinfo, tree) 
@@ -358,7 +359,10 @@ function es_track_trans.dissector(buffer, pinfo, tree)
 	subtree:add(es_track_trans.fields.transition, transition)
 
 	offset, scrap = readUntilTab(buffer, offset)
-	offset, scrap = readUntilTab(buffer, offset)
+
+	offset, device_id = readUntilTab(buffer, offset)
+	subtree:add(es_track_trans.fields.device_id, device_id)
+
 	offset, scrap = readUntilTab(buffer, offset)
 	offset, scrap = readUntilTab(buffer, offset)
 
