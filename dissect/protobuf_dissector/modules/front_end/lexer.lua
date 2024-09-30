@@ -50,8 +50,8 @@ if not _G['protbuf_dissector'] then return end
 
 
 -- make sure wireshark is new enough
-if not GRegex then
-    return nil, "Wireshark is too old: no GRegex library"
+if not rex_pcre2 then
+    return nil, "Wireshark is too old: no rex_pcre2 library"
 end
 
 local Settings    = require "settings"
@@ -83,7 +83,7 @@ function Lexer:generateVariableMatchPatterns()
     for _, token in ipairs(self.Syntax.token_info.VARIABLE) do
         if not token.value then
             dprint2("creating new variable regex for: ", token.ttype)
-            tbl[token.ttype] = GRegex.new("^" .. token.pattern .. "$")
+            tbl[token.ttype] = rex_pcre2.new("^" .. token.pattern .. "$")
         end
     end
     self.variable_token_regexes = tbl
@@ -97,7 +97,7 @@ function Lexer:generateStringMatchPatterns()
         for _, token in ipairs(self.Syntax.token_info[category]) do
             if not token.value then
                 dprint2("creating new string regex for: ", token.ttype)
-                tbl[token.ttype] = GRegex.new("^" .. token.pattern .. "$")
+                tbl[token.ttype] = rex_pcre2.new("^" .. token.pattern .. "$")
             end
         end
     end
@@ -112,7 +112,7 @@ function Lexer:generateSkipPatterns()
         for _, token in ipairs(self.Syntax.token_info[category]) do
             if token.skip then
                 dprint2("creating new skip regex for: ", token.ttype)
-                tbl[token.ttype] = GRegex.new(token.skip, token.skip_flags)
+                tbl[token.ttype] = rex_pcre2.new(token.skip, token.skip_flags)
                 if not tbl[token.ttype] then
                     error("Could not compile regex for: " .. token.ttype)
                 end
@@ -173,7 +173,7 @@ function Lexer:compilePatterns()
     local t = {}
     for ttype, str in pairs(self.pattern_strings) do
         -- Gregex will raise a Lua error if this doesn't succeed
-        t[ttype] = GRegex.new(str)
+        t[ttype] = rex_pcre2.new(str)
     end
     self.pattern = t
 end
@@ -226,7 +226,7 @@ function Lexer:tokenize(chunk, filename)
     -- normally we'd use Gregex.gmatch() in a for-loop to do this, but we need to
     -- skip quoted strings inside the for-loop, and that can't be done with gmatch;
     -- so we're going to do it the slower way by creating lots of substrings :(
-    -- also, GRegex.match() doesn't consider subsequent iterations to match a
+    -- also, rex_pcre2.match() doesn't consider subsequent iterations to match a
     -- pattern with a "^" anchor, which is unfortunate, so by creating substrings
     -- we get to use "^" to prevent skipping unmatched words/tokens
 

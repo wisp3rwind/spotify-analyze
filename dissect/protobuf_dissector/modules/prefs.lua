@@ -14,6 +14,12 @@
 if not _G['protbuf_dissector'] then return end
 
 
+-- make sure wireshark is new enough
+if not rex_pcre2 then
+    return nil, "Wireshark is too old: no rex_pcre2 library"
+end
+
+
 local Settings = require "settings"
 local dprint   = Settings.dprint
 local dprint2  = Settings.dprint2
@@ -24,10 +30,10 @@ local derror   = Settings.derror
 local Prefs = {}
 
 
-local range_rgx = GRegex.new("([0-9]+)\\s*(?:-\\s*([0-9]+))?")
+local range_rgx = rex_pcre2.new("([0-9]+)\\s*(?:-\\s*([0-9]+))?")
 local function getRange(range)
     local t = {}
-    for first, second in GRegex.gmatch(range, range_rgx) do
+    for first, second in rex_pcre2.gmatch(range, range_rgx) do
         if first then
             first = tonumber(first)
             if second then

@@ -94,8 +94,8 @@ function Cursor:nextLine()
 end
 
 
-local wspace_rgx = GRegex.new("^([ \t]++)|^(\n)", "s")
-local chunk_rgx  = GRegex.new("^([^\n]++)|^(\n)", "s")
+local wspace_rgx = rex_pcre2.new("^([ \t]++)|^(\n)", "s")
+local chunk_rgx  = rex_pcre2.new("^([^\n]++)|^(\n)", "s")
 local len = string.len
 local sub = string.sub
 

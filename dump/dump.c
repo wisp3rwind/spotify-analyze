@@ -15,6 +15,7 @@
 #include <pthread.h>
 #include <dlfcn.h>
 #include <assert.h>
+#include <arpa/inet.h>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -103,11 +104,16 @@ static void find_shn_heuristic(void *text_start, size_t text_size, void **p_shn_
 }
 
 static void patch_shn(void) {
-    dump_fd = open("dump.pcap", O_CREAT | O_RDWR | O_TRUNC, 0644);
+    char *fname = (char *) malloc(64 * sizeof(char));
+    pid_t pid = getpid();
+    snprintf(fname, 64, "dump-%ld.pcap", (long) pid);
+
+    dump_fd = open(fname, O_CREAT | O_RDWR | O_TRUNC, 0644);
 
     pcap_write_header(dump_fd, PCAP_DLT_USER0);
 
-    printf("Patching ...\n");
+
+    printf("Patching ... (PID = %ld)\n", (long) pid);
 
     size_t text_size = 0;
     void *text_start = NULL;

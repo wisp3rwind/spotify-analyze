@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eux
 
-exec wireshark-gtk $1 \
+exec wireshark $1 \
     -X lua_script:protobuf_dissector/protobuf.lua \
     -X lua_script:spotify.lua \
     -X lua_script:mercury.lua \

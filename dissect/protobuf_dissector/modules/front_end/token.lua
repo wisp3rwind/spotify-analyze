@@ -93,8 +93,8 @@ function Token:isNativeType()
 end
 
 
-local hex_rgx = GRegex.new("^0[xX]([a-fA-F0-9]+)$")
-local oct_rgx = GRegex.new("^0([0-7]+)$")
+local hex_rgx = rex_pcre2.new("^0[xX]([a-fA-F0-9]+)$")
+local oct_rgx = rex_pcre2.new("^0([0-7]+)$")
 
 
 function Token:convertToNumber()

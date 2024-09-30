@@ -26,8 +26,8 @@ if not _G['protbuf_dissector'] then return end
 
 
 -- make sure wireshark is new enough
-if not GRegex then
-    error("Wireshark is too old: no GRegex library - upgrade to version 1.12 or higher.")
+if not rex_pcre2 then
+    error("Wireshark is too old: no rex_pcre2 library - upgrade to version 1.12 or higher.")
 end
 
 

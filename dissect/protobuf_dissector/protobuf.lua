@@ -40,7 +40,8 @@ _G['protbuf_dissector'] = {
 
 
 -- help wireshark find our modules
-package.prepend_path("modules")
+-- package.prepend_path("modules")
+package.path = __DIR__ .. __DIR_SEPARATOR__ .. "modules" .. __DIR_SEPARATOR__ .. "?.lua;" .. package.path
 
 
 -- load our settings

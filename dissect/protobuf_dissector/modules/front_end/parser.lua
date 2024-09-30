@@ -40,8 +40,8 @@ if not _G['protbuf_dissector'] then return end
 
 
 -- make sure wireshark is new enough
-if not GRegex then
-    return nil, "Wireshark is too old: no GRegex library"
+if not rex_pcre2 then
+    return nil, "Wireshark is too old: no rex_pcre2 library"
 end
 
 
