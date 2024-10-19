@@ -25,6 +25,7 @@
 #include "pcap.h"
 #include "shn.h"
 
+static int init_pcap_file();
 static void patch_function(void *src, const void *dst);
 static void *memrmem(const void *haystack, size_t haystack_size,
                      const void *needle, size_t needle_size);
@@ -32,16 +33,40 @@ static void *memrmem(const void *haystack, size_t haystack_size,
 #define DIRECTION_SEND 0
 #define DIRECTION_RECV 1
 
-static int dump_fd;
+static int dump_fd = -1;
+
+/*
+ * The capture file is opened lazily just before the first write. This prevents
+ * writing empty pcap files which contain only the header from subprocesses
+ * that don't handle the shn en/decryption.
+ */
+static int init_pcap_file() {
+    if (dump_fd == -1) {
+        const size_t FNAME_CAP = 64;
+        char fname[FNAME_CAP];
+        pid_t pid = getpid();
+        snprintf(fname, FNAME_CAP, "dump-%ld.pcap", (long) pid);
+
+        dump_fd = open(fname, O_CREAT | O_RDWR | O_TRUNC, 0644);
+
+        pcap_write_header(dump_fd, PCAP_DLT_USER0);
+    }
+
+    return dump_fd;
+}
 
 static void my_shn_encrypt(shn_ctx * c, UCHAR * buf, int nbytes) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    pcap_write_packet_header(dump_fd, &tv, 1 + nbytes);
+    int fd = init_pcap_file();
 
-    uint8_t direction = DIRECTION_SEND;
-    write(dump_fd, &direction, 1);
-    write(dump_fd, buf, nbytes);
+    if (fd > 0) {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        pcap_write_packet_header(fd, &tv, 1 + nbytes);
+
+        uint8_t direction = DIRECTION_SEND;
+        write(fd, &direction, 1);
+        write(fd, buf, nbytes);
+    }
 
     shn_encrypt(c, buf, nbytes);
 }
@@ -59,14 +84,17 @@ static void my_shn_decrypt(shn_ctx * c, UCHAR * buf, int nbytes) {
             memcpy(&header, buf, 3);
     } else {
         if (nbytes == ntohs(header.length)) {
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            pcap_write_packet_header(dump_fd, &tv, 4 + nbytes);
+            int fd = init_pcap_file();
+            if (fd > 0) {
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                pcap_write_packet_header(fd, &tv, 4 + nbytes);
 
-            uint8_t direction = DIRECTION_RECV;
-            write(dump_fd, &direction, 1);
-            write(dump_fd, &header, 3);
-            write(dump_fd, buf, nbytes);
+                uint8_t direction = DIRECTION_RECV;
+                write(fd, &direction, 1);
+                write(fd, &header, 3);
+                write(fd, buf, nbytes);
+            }
         }
 
         header.cmd = 0;
@@ -104,15 +132,7 @@ static void find_shn_heuristic(void *text_start, size_t text_size, void **p_shn_
 }
 
 static void patch_shn(void) {
-    char *fname = (char *) malloc(64 * sizeof(char));
     pid_t pid = getpid();
-    snprintf(fname, 64, "dump-%ld.pcap", (long) pid);
-
-    dump_fd = open(fname, O_CREAT | O_RDWR | O_TRUNC, 0644);
-
-    pcap_write_header(dump_fd, PCAP_DLT_USER0);
-
-
     printf("Patching ... (PID = %ld)\n", (long) pid);
 
     size_t text_size = 0;
